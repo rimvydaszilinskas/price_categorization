@@ -1,0 +1,165 @@
+
+{% extends "base.html" %}
+
+{% block title %} Price predictor {% endblock %}
+
+{% block content %}
+<form>
+    <div class="form-row">
+        <div class="form-group col-md-12">
+            <label for="maker">Manufacturer</label>
+            <select class="custom-select" id="maker" name="maker">
+                <option value="11">Ford</option>
+                <option value="38">Skoda</option>
+                <option value="4">Bmw</option>
+                <option value="41">Suzuki</option>
+                <option value="30">Nissan</option>
+                <option value="31">Opel</option>
+                <option value="7">Citroen</option>
+                <option value="37">Seat</option>
+                <option value="19">Kia</option>
+                <option value="2">Audi</option>
+                <option value="36">Rover</option>
+                <option value="43">Toyota</option>
+                <option value="14">Hyundai</option>
+                <option value="10">Fiat</option>
+                <option value="45">Volvo</option>
+                <option value="5">Chevrolet</option>
+                <option value="26">Mazda</option>
+                <option value="18">Jeep</option>
+                <option value="27">Mercedes-benz</option>
+                <option value="40">Subaru</option>
+                <option value="21">Lancia</option>
+                <option value="39">Smart</option>
+                <option value="6">Chrysler</option>
+                <option value="12">Honda</option>
+                <option value="9">Dodge</option>
+                <option value="33">Porsche</option>
+                <option value="29">Mitsubishi</option>
+                <option value="28">Mini</option>
+                <option value="13">Hummer</option>
+                <option value="17">Jaguar</option>
+                <option value="23">Lexus</option>
+                <option value="3">Bentley</option>
+                <option value="25">Maserati</option>
+                <option value="20">Lamborghini</option>
+                <option value="16">Isuzu</option>
+                <option value="24">Lotus</option>
+                <option value="42">Tesla</option>
+                <option value="44">Volkswagen</option>
+                <option value="34">Renault</option>
+                <option value="32">Peugeot</option>
+                <option value="0">Alfa-romeo</option>
+                <option value="15">Infinity</option>
+                <option value="35">Rolls-royce</option>
+                <option value="1">Aston-martin</option>
+                <option value="22">Land-rover</option>
+                <option value="8">Dacia</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label for="mileage">Mileage</label>
+            <input type="number" class="form-control" min="0" id="mileage" name="mileage" value="0">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="manufacture_year">Year</label>
+            <input type="number" class="form-control" min="1885" max="2019" id="manufacture_year" name="manufacture_year" value="2010">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label for="transmission">Gearbox</label>
+            <select class="custom-select" id="transmission" name="transmission">
+                <option value="1">Manual</option>                
+                <option value="0">Automatic</option>
+            </select>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="fuel_type">Fuel Type</label>
+            <select class="custom-select" id="fuel_type" name="fuel_type">
+                <option value="3">Petrol</option>                
+                <option value="1">Diesel</option>
+                <option value="4">LPG</option>
+                <option value="0">CNG</option>
+                <option value="2">Electric</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label for="engine_displacement">Engine displacement (cm^3)</label>
+            <input type="number" class="form-control" id="engine_displacement" name="engine_displacement" min="500" max="8000" step="5" value="2000">
+        </div>
+        <div class="form-group col-md-6">
+            <label for="engine_power">Engine power (kw)</label>
+            <input type="number" class="form-control" id="engine_power" name="engine_power" min="1" max="1000" value="81">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label for="door_count">Door count</label>
+            <select class="custom-select" id="door_count" name="door_count">
+                <option value="2">2/3</option>                
+                <option value="4">4</option>
+                <option value="5">4/5</option>
+                <option value="6">6</option>
+                <option value="1">1</option>
+            </select>
+        </div>
+        <div class="form-group col-md-6">
+            <label for="seat_count">Seat count</label>
+            <input type="number" class="form-control" id="seat_count" name="seat_count" min="1" max="100" value="5">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-success">Submit</button>
+</form>
+
+<p class="lead" id="car_value_p" style="display: none">Price should be <span id="car_value"></span></p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $('form').submit((e) => {
+        var vehicle = {};
+        vehicle.maker = $('#maker').val();
+        vehicle.mileage = $('#mileage').val();
+        vehicle.year = $('#manufacture_year').val();
+        vehicle.transmission = $('#transmission').val();
+        vehicle.fuel_type = $('#fuel_type').val();
+        vehicle.engine_displacement = $('#engine_displacement').val();
+        vehicle.fuel_type = $('#fuel_type').val();
+        vehicle.engine_power = $('#engine_power').val();
+        vehicle.door_count = $('#door_count').val();
+        vehicle.seat_count = $('#seat_count').val();
+
+        $.ajax({
+            url: '/predict',
+            method: 'POST',
+            data: vehicle,
+            success: (response) => {
+                console.log(response)
+                if(response.max) {
+                    if(response.min) {
+                        // there are both min and max values
+                        $('#car_value').html(`in between ${response.min} and ${response.max} euros.`);
+                    } else {
+                        // only max value
+                        $('#car_value').html(`below ${response.max} euros.`);
+                    }
+                } else {
+                    // only min value defined
+                    $('#car_value').html(`above ${response.min} euros.`);
+                }
+                $('#car_value_p').show()
+            },
+            error: (err) => {
+                alert('An error occured!');
+            }
+        });
+
+        return false;
+    });
+</script>
+{% endblock %}
